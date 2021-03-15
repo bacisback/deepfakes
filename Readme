@@ -1,0 +1,5 @@
+Steps to run
+
+1) run csv_create in order to generate the csv needed.
+2) load the resnext model torch.hub.load('pytorch/vision:v0.6.0', 'resnext50_32x4d', pretrained=True)
+3) run train.py
