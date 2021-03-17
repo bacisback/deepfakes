@@ -15,11 +15,13 @@ def train_epoch(model, train_loader, criterion, optimizer, device):
     for batch in train_loader:
 
         # Move the training data to the GPU
-        inputs = Variable(batch['X']).to(device)
-        labels = Variable(batch['Y']).to(device)
+        inputs = Variable(batch['X'])
+        labels = Variable(batch['Y'])
 
         labels = labels.unsqueeze(1)
         labels = labels.to(torch.float32)
+
+        inputs, labels = inputs.to(device), labels.to(device)
 
         # clear previous gradient computation
         optimizer.zero_grad()
@@ -59,11 +61,13 @@ def validate(model, valid_loader, criterion, device):
         for batch in valid_loader:
 
             # Move the validation batch to the GPU
-            inputs = Variable(batch['X']).to(device)
-            labels = Variable(batch['Y']).to(device)
+            inputs = Variable(batch['X'])
+            labels = Variable(batch['Y'])
 
             labels = labels.unsqueeze(1)
             labels = labels.to(torch.float32)
+
+            inputs, labels = inputs.to(device), labels.to(device)
 
             # forward propagation
             # predictions, interm_feats = ???
@@ -75,8 +79,14 @@ def validate(model, valid_loader, criterion, device):
             # update running loss value
             valid_losses.append(loss.item())
 
+            #print(predictions)
+            #print(predictions.argmax(dim=1))
+            #print(np.round(predictions, 0))
+            #print('----------------------')
+            #print(labels)
+
             # save predictions
-            y_pred.extend(predictions.argmax(dim=1).cpu().numpy())
+            y_pred.extend(np.round(predictions, 0))
             y_labl.extend(labels.argmax(dim=1).cpu().numpy())
 
     # compute the average validation loss

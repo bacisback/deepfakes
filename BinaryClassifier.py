@@ -4,12 +4,14 @@ from torch import nn
 
 class BinaryClassifier(nn.Module):
 
-    def __init__(self, originalModel):
+    def __init__(self, originalModel, freeze=True):
 
         super().__init__()
 
         self.model = originalModel
-        self.model = BinaryClassifier.freezeLayers(self.model)
+
+        if freeze:
+            self.model = BinaryClassifier.freezeLayers(self.model)
 
         self.model.fc = nn.Linear(originalModel.fc.in_features, 1)
 
