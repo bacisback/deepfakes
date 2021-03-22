@@ -27,7 +27,7 @@ def train_epoch(model, train_loader, criterion, optimizer, device):
         optimizer.zero_grad()
 
         # forward propagation
-        predictions = model(inputs)
+        _, predictions = model(inputs)
 
         # calculate the lossfor the batch
         loss = criterion(predictions, labels)
@@ -71,7 +71,7 @@ def validate(model, valid_loader, criterion, device):
 
             # forward propagation
             # predictions, interm_feats = ???
-            predictions = model(inputs)
+            _, predictions = model(inputs)
 
             # calculate the loss
             loss = criterion(predictions, labels)
@@ -86,8 +86,8 @@ def validate(model, valid_loader, criterion, device):
             #print(labels)
 
             # save predictions
-            y_pred.extend(np.round(predictions, 0))
-            y_labl.extend(labels.argmax(dim=1).cpu().numpy())
+            y_pred.extend(np.round(predictions, 0).flatten())
+            y_labl.extend(labels.cpu().numpy().flatten())
 
     # compute the average validation loss
     valid_loss = sum(valid_losses) / len(valid_losses)
@@ -145,7 +145,7 @@ def save_checkpoint(optimizer, model, epoch, filename):
         'epoch': epoch
     }
 
-    torch.save(checkpoint_dict, filename)
+    torch.save(model, filename)
 
 
 
