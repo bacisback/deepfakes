@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on Wed Mar 24 10:56:28 2021
+
+@author: e321075
+"""
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Mar 15 17:00:22 2021
 
 @author: e321075
@@ -15,24 +23,50 @@ from torchvision import transforms
 from face_recognition import FaceRecog
 from torch.utils.data import Dataset, DataLoader
 from torchvision import utils
+import cv2
+from PIL import Image
 
+root_dir          = "./videos/"
 
-
-root_dir          = "./Task_1/"
-train             = os.path.join(root_dir, "development/")    # train images
-test              = os.path.join(root_dir, "evaluation/")    # train images
-train_file = os.path.join(root_dir, "train.csv")
-test_file  = os.path.join(root_dir, "test.csv")
 
 
 means=[0.485, 0.456, 0.406]
 std=[0.229, 0.224, 0.225]
 
+def load_video(filename):
+    cap = cv2.VideoCapture(filename)
+    ret = True
+    i = 0
+    j = 0
+    out = []
+    while(cap.isOpened()):
+        if j == 10:
+            break
+        try:
+            ret, frame_in = cap.read()
+        except:
+            continue
+        if ret == False:
+            break
+        out.append(Image.fromarray(frame_in))
+        if i%3==0:
+            j +=1
+        i += 1
+    return out
+class Task3_loader(Dataset):
 
-class Task1_loader(Dataset):
-
-    def __init__(self, csv_file, phase):
-        self.data      = pd.read_csv(csv_file)
+    def __init__(self, dir_vids=root_dir, phase='train'):
+        self.data      = [os.path.join(dir_vids,name) for name in os.listdir(dir_vids) if "json" not in name]
+        self.imgs = []
+        self.labels = {}
+        self.video=-1
+        meta =  pd.read_json(dir_vids+"metadata.json")
+        for name in os.listdir(dir_vids):
+            if "json" in name:
+                continue
+            
+            self.labels[os.path.join(dir_vids,name)] = int(meta[name]["label"] != "FAKE")
+        print(self.labels)
         if phase == 'train':
             self.preprocess = [
                             FaceRecog(margin=7),
@@ -40,7 +74,6 @@ class Task1_loader(Dataset):
                             transforms.RandomCrop(224),
                             transforms.RandomVerticalFlip(p=0.5),
                             transforms.RandomRotation(5),
-                            transforms.ColorJitter(brightness=0.41, contrast=0.41, saturation=0.25, hue=0.1),
                             transforms.ToTensor(),
                             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
                         ]
@@ -55,14 +88,23 @@ class Task1_loader(Dataset):
         self.preprocess = transforms.Compose(self.preprocess)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data)*10
 
     def __getitem__(self, idx):
-        img_name   = self.data.iloc[idx, 0]
-        input_image = Image.open(img_name)
-        label = self.data.iloc[idx, 1]
-        label = int(label)
-
+        video = idx//10
+        frame = video%10
+        if video != self.video:
+            self.video = video
+            self.imgs = load_video(self.data[video])
+        try:
+            input_image   = self.imgs[frame*3]
+        except:
+            print(frame)
+            input_image   = self.imgs[frame]
+        try:
+            label = self.labels[self.data[video]]
+        except:
+            print(self.data[video])
             
 
         # reduce mean
@@ -73,12 +115,12 @@ class Task1_loader(Dataset):
         return sample
 
 if __name__ == "__main__":
-    train_data = Task1_loader(csv_file=train_file, phase='train')
+    train_data = Task3_loader()
 
     # show a batch
     batch_size = 4
     for i in range(batch_size):
         sample = train_data[i]
-        print(i, sample['X'].size(), sample['Y'].size())
+        print(i, sample['X'].size(), sample['Y'])
 
     dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=False, num_workers=4)
