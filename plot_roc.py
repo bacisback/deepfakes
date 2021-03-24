@@ -37,9 +37,9 @@ model = nn.Sequential(*list(model.children())[:-1]) # Remove original output lay
 model[0].final_block.pool = nn.Sequential(nn.AdaptiveAvgPool2d(1)) # xcep
 model = FCN(model, 2048)
 """
-model = torch.load("./checkpoints/95softmax.pkl")
+model = torch.load("./checkpoints/89.pkl")
 
-test_data = Task1_loader("./Task_2_3/test.csv", phase='test')
+test_data = Task1_loader("./Task_1/test.csv", phase='test')
 valid_loader = DataLoader(test_data, batch_size=55, shuffle=False, num_workers=8)
 
 y_pred = []
@@ -55,7 +55,7 @@ with torch.no_grad():
         labels = labels.unsqueeze(1)
         labels = labels.to(torch.float32)
 
-        inputs, labels = inputs.to('cpu'), labels.to('cpu')
+        inputs, labels = inputs.to('cuda'), labels.to('cuda')
 
         # forward propagation
         # predictions, interm_feats = ???

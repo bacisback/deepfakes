@@ -15,7 +15,7 @@ import re
 #############################
 	# global variables #
 #############################
-root_dir          = "./Task_1/"
+root_dir          = "./Task_2_3/"
 train             = os.path.join(root_dir, "development/")    # train images
 test              = os.path.join(root_dir, "evaluation/")    # train images
 

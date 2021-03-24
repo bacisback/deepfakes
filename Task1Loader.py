@@ -12,7 +12,7 @@ import os
 import pandas as pd
 from PIL import Image
 from torchvision import transforms
-
+from face_recognition import FaceRecog
 from torch.utils.data import Dataset, DataLoader
 from torchvision import utils
 
@@ -34,20 +34,24 @@ class Task1_loader(Dataset):
     def __init__(self, csv_file, phase):
         self.data      = pd.read_csv(csv_file)
         if phase == 'train':
-            self.preprocess = transforms.Compose([
+            self.preprocess = [
+                            FaceRecog(margin=7),
                             transforms.Resize(256),
                             transforms.RandomCrop(224),
                             transforms.RandomVerticalFlip(p=0.5),
+                            transforms.RandomRotation(5),
                             transforms.ToTensor(),
                             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-                        ])
+                        ]
         else:
-            self.preprocess = transforms.Compose([
+            self.preprocess = [
+                            FaceRecog(margin=7),
                             transforms.Resize(256),
                             transforms.CenterCrop(224),
                             transforms.ToTensor(),
                             transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-                        ])
+                        ]
+        self.preprocess = transforms.Compose(self.preprocess)
 
     def __len__(self):
         return len(self.data)

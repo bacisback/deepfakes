@@ -61,8 +61,8 @@ def validate(model, valid_loader, criterion, device):
         for batch in valid_loader:
 
             # Move the validation batch to the GPU
-            inputs = Variable(batch['X'])
-            labels = Variable(batch['Y'])
+            inputs = Variable(batch['X'].to(device))
+            labels = Variable(batch['Y'].to(device))
 
             labels = labels.unsqueeze(1)
             labels = labels.to(torch.float32)
@@ -86,7 +86,7 @@ def validate(model, valid_loader, criterion, device):
             #print(labels)
 
             # save predictions
-            y_pred.extend(np.round(predictions, 0).flatten())
+            y_pred.extend(np.round(predictions.cpu().numpy(), 0).flatten())
             y_labl.extend(labels.cpu().numpy().flatten())
 
     # compute the average validation loss

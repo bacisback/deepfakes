@@ -48,15 +48,15 @@ class FCN(torch.nn.Module):
 
 def main():
 
-    batch_size = 55
+    batch_size = 20
 
     # model = models.resnet18(pretrained=False)
-    model = get_model("xception", pretrained=True)
+    model = get_model("xception", pretrained=False)
     model = nn.Sequential(*list(model.children())[:-1]) # Remove original output layer
 
     model[0].final_block.pool = nn.Sequential(nn.AdaptiveAvgPool2d(1)) # xcep
     model = FCN(model, 2048)
-
+    model.cuda()
     train_data = Task1_loader("./Task_1/train.csv", phase='train')
     test_data = Task1_loader("./Task_1/test.csv", phase='test')
 
@@ -68,7 +68,7 @@ def main():
     # optimizer = optim.SGD(model.parameters(), lr=0.0018, momentum=0.27)
     optimizer = optim.Adam(model.parameters(), lr=1e-4, weight_decay=1e-5)
 
-    train(model, train_loader, valid_loader, criterion, optimizer, 10, device='cpu')
+    train(model, train_loader, valid_loader, criterion, optimizer, 100, device='cuda')
 
 if __name__ == '__main__':
     main()
